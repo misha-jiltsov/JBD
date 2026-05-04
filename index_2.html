@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Special Adventure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --sky: #eaf4fb;
+    --mid: #d6ecf7;
+    --card: #ffffff;
+    --accent: #2a8fc4;
+    --gold: #1a6fa0;
+    --mint: #3aaad4;
+    --lilac: #5bb8e0;
+    --text: #1a3a4a;
+    --muted: #6a9ab0;
+  }
+
+  body {
+    background: var(--sky);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ─── SUBTLE DOTS BACKGROUND ─── */
+  #stars {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  }
+  .star {
+    position: absolute;
+    background: #a8d8ee;
+    border-radius: 50%;
+    animation: twinkle var(--d, 3s) infinite var(--delay, 0s) alternate;
+  }
+  @keyframes twinkle { from { opacity: 0.1; } to { opacity: 0.4; } }
+
+  /* ─── SCREENS ─── */
+  .screen {
+    display: none;
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .screen.active { display: flex; }
+
+  /* ─── PASSWORD SCREEN ─── */
+  #screen-password {
+    gap: 2rem;
+  }
+  .title-badge {
+    text-align: center;
+  }
+  .title-badge h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 6vw, 4rem);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+  }
+  .title-badge p {
+    color: var(--muted);
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .password-card {
+    background: var(--card);
+    border: 1px solid #c2dff0;
+    border-radius: 20px;
+    padding: 2.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    min-width: 340px;
+    box-shadow: 0 8px 40px rgba(58,170,212,0.12);
+  }
+  .lock-icon {
+    font-size: 3rem;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  .password-card label {
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    align-self: flex-start;
+  }
+  .password-card input[type="password"] {
+    width: 100%;
+    background: #f0f8fd;
+    border: 1.5px solid #b3d9ee;
+    border-radius: 12px;
+    padding: 0.85rem 1.2rem;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.3em;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: center;
+  }
+  .password-card input[type="password"]:focus {
+    border-color: var(--mint);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #3aaad4, #2a8fc4);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.85rem 2.5rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(58,170,212,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(58,170,212,0.45); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .error-msg {
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 700;
+    min-height: 1.2em;
+    animation: shake 0.4s;
+  }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-5px)}
+    80%{transform:translateX(5px)}
+  }
+
+  /* ─── HUB SCREEN ─── */
+  #screen-hub {
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+  .hub-header {
+    text-align: center;
+  }
+  .hub-header h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5rem;
+    color: var(--accent);
+  }
+  .hub-header p { color: var(--muted); font-size: 1rem; margin-top: 0.3rem; }
+
+  .level-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    width: 100%;
+    max-width: 480px;
+  }
+  .level-card {
+    background: var(--card);
+    border: 1px solid #c2dff0;
+    border-radius: 16px;
+    padding: 1.1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .level-card.unlocked:hover {
+    transform: translateX(6px);
+    border-color: #3aaad4;
+    box-shadow: 0 6px 24px rgba(58,170,212,0.15);
+  }
+  .level-card.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .level-card.completed { border-color: #3aaad4; }
+  .level-num {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .level-num.locked-num { background: #e8f4fb; color: var(--muted); }
+  .level-info h3 { font-weight: 800; font-size: 1rem; }
+  .level-info p { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; }
+  .level-status {
+    margin-left: auto;
+    font-size: 1.3rem;
+  }
+
+  /* ─── GAME SCREEN ─── */
+  #screen-game {
+    padding: 0;
+    position: relative;
+  }
+  #game-canvas-wrap {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+  }
+  canvas#gameCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  #game-hud {
+    position: absolute;
+    top: 1rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    border: 1px solid #c2dff0;
+    box-shadow: 0 2px 16px rgba(58,170,212,0.1);
+  }
+  #hud-level { font-family: 'Fredoka One', cursive; color: var(--accent); font-size: 1rem; }
+  #hud-title { font-size: 0.85rem; color: var(--muted); }
+  #btn-quit {
+    background: rgba(233,69,96,0.08);
+    border: 1px solid rgba(233,69,96,0.3);
+    color: #c0394e;
+    border-radius: 50px;
+    padding: 0.3rem 1rem;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+  }
+  #btn-quit:hover { background: rgba(233,69,96,0.18); }
+
+  /* ─── WIN OVERLAY ─── */
+  #win-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(234,244,251,0.88);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  #win-overlay.show { display: flex; animation: fadeIn 0.4s; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  #win-overlay h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3rem;
+    color: var(--accent);
+  }
+  #win-overlay p { color: var(--muted); font-size: 1rem; }
+  #btn-next {
+    background: linear-gradient(135deg, #3aaad4, #2a8fc4);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 1rem 2.5rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+    box-shadow: 0 4px 20px rgba(58,170,212,0.35);
+  }
+  #btn-next:hover { transform: scale(1.05); }
+
+  /* Confetti particle */
+  .confetti-piece {
+    position: absolute;
+    width: 10px; height: 10px;
+    top: -20px;
+    pointer-events: none;
+    border-radius: 2px;
+    animation: confettiFall 2s ease-in forwards;
+  }
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ─── BIRTHDAY SCREEN ─── */
+  #screen-birthday {
+    text-align: center;
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+  #screen-birthday h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    background: linear-gradient(135deg, #1a6fa0, #3aaad4, #5bb8e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .card-area {
+    background: white;
+    color: #333;
+    border-radius: 20px;
+    padding: 2.5rem 3rem;
+    max-width: 560px;
+    width: 100%;
+    font-size: 1.15rem;
+    line-height: 1.8;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    min-height: 200px;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 500px) {
+    .password-card { min-width: unset; padding: 2rem 1.5rem; margin: 1rem; }
+    .card-area { padding: 1.5rem; margin: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Stars -->
+<div id="stars"></div>
+
+<!-- ══════════════ PASSWORD SCREEN ══════════════ -->
+<div class="screen active" id="screen-password">
+  <div class="title-badge">
+    <h1>Cro's Adventure</h1>
+  </div>
+  <div class="password-card">
+    <label for="pw-input">Passphrase</label>
+    <input type="password" id="pw-input" placeholder="••••••••" autofocus />
+    <button class="btn-primary" onclick="checkPassword()">Enter</button>
+    <div class="error-msg" id="pw-error"></div>
+  </div>
+</div>
+
+<!-- ══════════════ HUB SCREEN ══════════════ -->
+<div class="screen" id="screen-hub">
+  <img src="meowl2.png" alt="Player Image" width="200">
+  <div class="hub-header">
+    <p>Complete each level to unlock the next one</p>
+  </div>
+  <div class="level-grid" id="level-grid"></div>
+</div>
+
+<!-- ══════════════ GAME SCREEN ══════════════ -->
+<div class="screen" id="screen-game">
+  <div id="game-canvas-wrap">
+    <canvas id="gameCanvas"></canvas>
+    <div id="game-hud">
+      <span id="hud-level">Level 1</span>
+      <span id="hud-title">The Meowl Maze</span>
+      <button id="btn-quit" onclick="quitToHub()">✕ Quit</button>
+    </div>
+    <div id="win-overlay">
+      <h2>Level Complete!</h2>
+      <p id="win-msg">Brilliant! Keep going…</p>
+      <button class="btn-primary" id="btn-next" onclick="nextLevel()">Next Level →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ BIRTHDAY CARD SCREEN ══════════════ -->
+<div class="screen" id="screen-birthday">
+  <h1>Happy Birthday Croling!</h1>
+  <div class="card-area" id="birthday-message">
+    <p><em><br>
+    </em></p>
+  </div>
+</div>
+
+
+<!-- ══════════════ INTRO SCREEN ══════════════ -->
+<div id="intro-overlay" style="
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(234,244,251,0.95);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 2rem;
+">
+  <h1 style="font-family: 'Fredoka One', cursive; color: #2a8fc4;">
+    Welcome Julia!
+  </h1>
+
+  <p style="max-width: 500px; margin-top: 1rem; color: #1a3a4a;">
+    This is a message from meowl. I uh.. I recieved a birthday card for someone 
+    named "Cro" from Misha, but I seem to have misplaced it. Although I seem to have 
+    noticed a that we have some challenges here which Im sure should lead us to the card but im just a meowl so I dont know how to do these. 
+    Please help me retrieve this letter so I can present it to this Cro person!
+  </p>
+
+  <button class="btn-primary" onclick="closeIntro()" style="margin-top: 2rem;">
+    Start Adventure →
+  </button>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   CONFIGURATION — edit this section to customise the game
+   ═══════════════════════════════════════════════════════ */
+const PASSWORD = "123";         
+
+const playerImg = new Image();
+playerImg.src = "meowl2.png";
+
+const ZOOM = 1.4;
+let hasSeenIntro = false;
+
+const LEVELS = [
+  {
+    id: 1,
+    title: "The Meowl Maze",
+    type: "maze",
+    color: "#4ecdc4"
+  },
+  {
+    id: 2,
+    title: "Meowl Climber",
+    type: "platformer",
+    color: "#f5a623"
+  },
+  {
+    id: 3,
+    title: "Meowl Dodge",
+    type: "dodge",
+    color: "#c77dff"
+  },
+  {
+    id: 4,
+    title: "Meowl's Cypher",
+    type: "word-input",
+    color: "#ff8fab"
+}
+  /* ─── ADD NEW LEVELS HERE ─────────────────────────────
+     Copy the block above and change the fields.
+     'type' can be: 'maze' | 'platformer' | 'dodge' (or add your own)
+     ────────────────────────────────────────────────────── */
+];
+
+function closeIntro() {
+  document.getElementById('intro-overlay').style.display = 'none';
+  hasSeenIntro = true;
+}
+
+async function loadBirthdayMessage() {
+  try {
+    const res = await fetch("birthdaymessageJ.txt");
+    const text = await res.text();
+
+    document.getElementById("birthday-message").innerText = text;
+  } catch (err) {
+    document.getElementById("birthday-message").innerText =
+      "Could not load message";
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════ */
+let unlockedLevel = 1;   
+let currentLevelIdx = 0;
+let gameLoop = null;
+let gameState = {};
+
+/* ═══════════════════════════════════════════════════════
+   STARS
+   ═══════════════════════════════════════════════════════ */
+(function makeStars() {
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${sz}px;height:${sz}px;
+      top:${Math.random()*100}%;left:${Math.random()*100}%;
+      --d:${(Math.random()*3+1.5).toFixed(1)}s;
+      --delay:-${(Math.random()*4).toFixed(1)}s;
+      opacity:${Math.random()};
+    `;
+    container.appendChild(s);
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SCREEN SWITCHING
+   ═══════════════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ═══════════════════════════════════════════════════════
+   PASSWORD CHECKING
+   ═══════════════════════════════════════════════════════ */
+
+const PASSWORD_HASH = "a45aa718260bec2d99a7097b408b384be66d30818764e6d46c7b66a3d1df152b"; 
+
+async function hash(text) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(hashBuffer)]
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function checkPassword() {
+  const val = document.getElementById('pw-input').value;
+  const err = document.getElementById('pw-error');
+
+  const hashed = await hash(val);
+
+  if (hashed === PASSWORD_HASH) {
+    err.textContent = '';
+    buildHub();
+    showScreen('screen-hub');
+
+    // Store password for later decryption use
+    sessionStorage.setItem("pw", val);
+
+  } else {
+    err.textContent = "Hmm, that's not right — try again!";
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   HUB
+   ═══════════════════════════════════════════════════════ */
+function buildHub() {
+  if (!hasSeenIntro) {
+  document.getElementById('intro-overlay').style.display = 'flex';
+  }
+  const grid = document.getElementById('level-grid');
+  grid.innerHTML = '';
+  LEVELS.forEach((lvl, i) => {
+    const unlocked = (i + 1) <= unlockedLevel;
+    const completed = (i + 1) < unlockedLevel;
+    const card = document.createElement('div');
+    card.className = 'level-card ' + (unlocked ? 'unlocked' : 'locked') + (completed ? ' completed' : '');
+    card.innerHTML = `
+      
+      <div class="level-info">
+        <h3 style="color:${unlocked ? 'var(--text)' : 'var(--muted)'}">Level ${lvl.id} — ${lvl.title}</h3>
+      </div>
+      <div class="level-status">${completed ? '✅' : (unlocked ? '▶' : '')}</div>
+    `;
+    if (unlocked) card.onclick = () => startLevel(i);
+    grid.appendChild(card);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   START / QUIT
+   ═══════════════════════════════════════════════════════ */
+function startLevel(idx) {
+  currentLevelIdx = idx;
+  const lvl = LEVELS[idx];
+  document.getElementById('hud-level').textContent = `Level ${lvl.id}`;
+  document.getElementById('hud-title').textContent = lvl.title;
+  document.getElementById('win-overlay').classList.remove('show');
+  showScreen('screen-game');
+  initGame(lvl);
+}
+
+function quitToHub() {
+  stopGame();
+  buildHub();
+  showScreen('screen-hub');
+}
+
+function nextLevel() {
+  stopGame();
+  const nextIdx = currentLevelIdx + 1;
+  if (nextIdx >= LEVELS.length) {
+    // All levels done — show birthday card!
+    setTimeout(() => {
+      showScreen('screen-birthday');
+      loadBirthdayMessage();
+    }, 400);
+  } else {
+    startLevel(nextIdx);
+  }
+}
+
+function completeLevel() {
+  stopGame();
+  if (currentLevelIdx + 2 > unlockedLevel) {
+    unlockedLevel = currentLevelIdx + 2;
+  }
+  const isLast = currentLevelIdx + 1 >= LEVELS.length;
+  document.getElementById('win-msg').textContent = isLast
+    ? 'ALL DONE! meowl is so happy!'
+    : `Level ${LEVELS[currentLevelIdx + 1]?.title || ''} unlocked!`;
+  document.getElementById('btn-next').textContent = isLast ? 'This is the last level i dont know what to put here' : 'Next Level →';
+  document.getElementById('win-overlay').classList.add('show');
+}
+
+/* ═══════════════════════════════════════════════════════
+   GAME ENGINE — shared canvas setup
+   ═══════════════════════════════════════════════════════ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const keys = {};
+
+window.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  // Only block default keys during active gameplay (not on the password screen)
+  if (
+  document.getElementById('screen-game').classList.contains('active') &&
+  e.target.tagName !== 'INPUT'
+  ) {
+    e.preventDefault();
+  }
+});
+window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+
+function stopGame() {
+  if (gameLoop) { cancelAnimationFrame(gameLoop); gameLoop = null; }
+}
+
+function initGame(lvl) {
+  stopGame();
+  resizeCanvas();
+  const W = canvas.width, H = canvas.height;
+
+  const playerImg = new Image();
+  playerImg.src = "player.png";
+
+  if (lvl.type === 'maze')       initMaze(W, H);
+  else if (lvl.type === 'platformer') initPlatformer(W, H);
+  else if (lvl.type === 'dodge') initDodge(W, H);
+  else if (lvl.type === 'word-input') initWords(W, H);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ══════════════════════════════════════════════════════
+   LEVEL TYPE: MAZE
+   ═════════════════════════════════════════════════════ */
+function initMaze(W, H) {
+  const CELL = 48;
+
+  const COLS = 40;
+  const ROWS = 40;
+
+  // Generate a simple maze (outer walls + random blocks)
+  const map = [];
+  for (let r = 0; r < ROWS; r++) {
+    map[r] = [];
+    for (let c = 0; c < COLS; c++) {
+      if (r === 0 || c === 0 || r === ROWS - 1 || c === COLS - 1) {
+        map[r][c] = 1;
+      } else {
+        map[r][c] = Math.random() < 0.25 ? 1 : 0;
+      }
+    }
+  }
+
+  // Ensure start + end are clear
+  map[1][1] = 0;
+  map[ROWS - 2][COLS - 2] = 0;
+
+  const player = {
+    col: 1,
+    row: 1,
+    x: 1 * CELL,
+    y: 1 * CELL,
+    tx: 1 * CELL,
+    ty: 1 * CELL,
+    moving: false
+  };
+
+  const goal = { col: COLS - 2, row: ROWS - 2 };
+
+  let moveDelay = 0;
+
+  function tryMove(dc, dr) {
+    if (player.moving) return;
+
+    const nc = player.col + dc;
+    const nr = player.row + dr;
+
+    if (map[nr][nc] === 1) return;
+
+    player.col = nc;
+    player.row = nr;
+    player.tx = nc * CELL;
+    player.ty = nr * CELL;
+    player.moving = true;
+  }
+
+  // Camera
+  let camX = 0;
+  let camY = 0;
+
+  function update() {
+    if (moveDelay > 0) moveDelay--;
+    else {
+      if (keys['ArrowUp'] || keys['w']) { tryMove(0, -1); moveDelay = 8; }
+      if (keys['ArrowDown'] || keys['s']) { tryMove(0, 1); moveDelay = 8; }
+      if (keys['ArrowLeft'] || keys['a']) { tryMove(-1, 0); moveDelay = 8; }
+      if (keys['ArrowRight'] || keys['d']) { tryMove(1, 0); moveDelay = 8; }
+    }
+
+    // Smooth movement
+    if (player.moving) {
+      player.x += (player.tx - player.x) * 0.25;
+      player.y += (player.ty - player.y) * 0.25;
+
+      if (Math.abs(player.x - player.tx) < 0.5 && Math.abs(player.y - player.ty) < 0.5) {
+        player.x = player.tx;
+        player.y = player.ty;
+        player.moving = false;
+      }
+    }
+
+    // Camera follows player
+    camX += ((player.x - W / 2) - camX) * 0.1;
+    camY += ((player.y - H / 2) - camY) * 0.1;
+
+    // Win check
+    if (player.col === goal.col && player.row === goal.row) {
+      completeLevel();
+    }
+  }
+
+  const t = Date.now();
+
+  function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      ctx.save();
+
+      // Center camera on player
+      const camX = player.x - W / (2 * ZOOM);
+      const camY = player.y - H / (2 * ZOOM);
+
+      // Apply zoom + camera
+      ctx.scale(ZOOM, ZOOM);
+      ctx.translate(-camX, -camY);
+
+    // Draw maze
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const x = c * CELL;
+        const y = r * CELL;
+
+        if (map[r][c] === 1) {
+          ctx.fillStyle = '#3aaad4';
+          ctx.fillRect(x, y, CELL, CELL);
+          ctx.fillStyle = '#5bb8e0';
+          ctx.fillRect(x + 1, y + 1, CELL - 2, 4);
+        } else {
+          ctx.fillStyle = '#eaf4fb';
+          ctx.fillRect(x, y, CELL, CELL);
+        }
+      }
+    }
+
+    // Goal
+    const gx = goal.col * CELL;
+    const gy = goal.row * CELL;
+    const pulse = 0.8 + 0.2 * Math.sin((Date.now() - t) / 300);
+
+    ctx.save();
+    ctx.translate(gx + CELL / 2, gy + CELL / 2);
+    ctx.scale(pulse, pulse);
+    ctx.font = `${CELL * 0.7}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⭐', 0, 0);
+    ctx.restore();
+
+    // Player
+    ctx.save();
+    ctx.font = `${CELL * 0.7}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (playerImg.complete && playerImg.naturalWidth !== 0) {
+      ctx.drawImage(
+        playerImg,
+        player.x + 4,
+        player.y + 4,
+        CELL - 8,
+        CELL - 8
+      );
+    } else {
+      // fallback while loading
+      ctx.fillText('🐱', player.x + CELL/2, player.y + CELL/2);
+    }
+    
+    ctx.restore();
+
+    ctx.restore();
+
+    // UI hint (fixed to screen)
+    ctx.fillStyle = 'rgba(42,143,196,0.5)';
+    ctx.font = '13px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Arrow keys or WASD to move. Please exit the level if it is impossible using the top button, and rejoin it in the menu', W / 2, H - 18);
+  }
+
+  function loop() {
+    update();
+    draw();
+    gameLoop = requestAnimationFrame(loop);
+  }
+
+  loop();
+}
+
+
+
+
+
+
+
+
+
+
+/* ══════════════════════════════════════════════════════
+   LEVEL TYPE: PLATFORMER
+   ═════════════════════════════════════════════════════ */
+function initPlatformer(W, H) {
+  // ─── PHYSICS (tuned for smooth + slower feel) ───
+  const GRAVITY = 0.35;
+  const JUMP = -9;
+  const MAX_SPEED = 3;
+  const ACCEL = 0.4;
+  const FRICTION = 0.8;
+  const LEVEL_WIDTH = 3000; 
+
+  // ─── LEVEL ───
+  const platforms = [
+  { x: 0, y: H - 40, w: 200, h: 40 }, // start
+
+  { x: 250, y: H - 120, w: 120, h: 20 },
+  { x: 420, y: H - 180, w: 100, h: 20 },
+  { x: 580, y: H - 140, w: 120, h: 20 },
+
+  { x: 750, y: H - 220, w: 100, h: 20 },
+  { x: 900, y: H - 180, w: 100, h: 20 },
+
+  { x: 1100, y: H - 260, w: 120, h: 20 },
+  { x: 1300, y: H - 200, w: 120, h: 20 },
+
+  { x: 1500, y: H - 300, w: 100, h: 20 },
+  { x: 1700, y: H - 240, w: 120, h: 20 },
+
+  { x: 1900, y: H - 180, w: 140, h: 20 },
+  { x: 2150, y: H - 260, w: 100, h: 20 },
+
+  { x: 2400, y: H - 200, w: 140, h: 20 },
+  { x: 2700, y: H - 140, w: 200, h: 40 } // end platform
+  ];
+
+  const goal = {
+    x: LEVEL_WIDTH - 150,
+    y: H - 180,
+    w: 40,
+    h: 40
+  };
+
+  const player = {
+    x: 20,
+    y: H - 100,
+    w: 32,
+    h: 32,
+    vx: 0,
+    vy: 0,
+    grounded: false,
+    facing: 1,
+    coyoteTime: 0,
+    jumpBuffer: 0
+  };
+
+  let cameraX = 0;
+
+  // ─── UPDATE ───
+  function update() {
+    // Movement input (acceleration)
+    if (keys['ArrowLeft'] || keys['a']) {
+      player.vx -= ACCEL;
+      player.facing = -1;
+    }
+    if (keys['ArrowRight'] || keys['d']) {
+      player.vx += ACCEL;
+      player.facing = 1;
+    }
+
+    // Clamp speed
+    player.vx = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, player.vx));
+
+    // Friction
+    if (!(keys['ArrowLeft'] || keys['a'] || keys['ArrowRight'] || keys['d'])) {
+      player.vx *= FRICTION;
+    }
+
+    // Jump buffering
+    if (keys['ArrowUp'] || keys['w'] || keys[' ']) {
+      player.jumpBuffer = 8;
+    } else {
+      player.jumpBuffer--;
+    }
+
+    // Gravity
+    player.vy += GRAVITY;
+
+    // Apply movement
+    player.x += player.vx;
+    player.y += player.vy;
+
+    player.grounded = false;
+
+    // Platform collisions
+    for (const p of platforms) {
+      if (
+        player.x + player.w > p.x &&
+        player.x < p.x + p.w &&
+        player.y + player.h > p.y &&
+        player.y + player.h < p.y + p.h + player.vy + 5 &&
+        player.vy >= 0
+      ) {
+        player.y = p.y - player.h;
+        player.vy = 0;
+        player.grounded = true;
+        player.coyoteTime = 6;
+      }
+    }
+
+    // Coyote time countdown
+    player.coyoteTime--;
+
+    // Jump trigger
+    if (player.jumpBuffer > 0 && player.coyoteTime > 0) {
+      player.vy = JUMP;
+      player.jumpBuffer = 0;
+      player.coyoteTime = 0;
+    }
+
+    // Reset if fallen
+    if (player.y > H + 100) {
+      player.x = 20;
+      player.y = H - 100;
+      player.vx = 0;
+      player.vy = 0;
+    }
+
+    // Bounds
+    if (player.x < 0) player.x = 0;
+
+    // Camera follow (smooth)
+    cameraX += ((player.x - W * 0.35) - cameraX) * 0.08;
+
+    // Clamp camera to level
+    cameraX = Math.max(0, Math.min(cameraX, LEVEL_WIDTH - W));
+
+    // Goal check
+    if (
+      player.x + player.w > goal.x &&
+      player.x < goal.x + goal.w &&
+      player.y + player.h > goal.y &&
+      player.y < goal.y + goal.h
+    ) {
+      completeLevel();
+    }
+  }
+
+  // ─── DRAW ───
+  const t = Date.now();
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#d6ecf7');
+    grad.addColorStop(1, '#eaf4fb');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.translate(-cameraX, 0);
+
+    // Platforms
+    for (const p of platforms) {
+      ctx.fillStyle = '#3aaad4';
+      ctx.beginPath();
+      ctx.roundRect(p.x, p.y, p.w, p.h, 6);
+      ctx.fill();
+
+      ctx.fillStyle = '#5bb8e0';
+      ctx.fillRect(p.x + 4, p.y + 2, p.w - 8, 4);
+    }
+
+    // Goal
+    const pulse = 0.85 + 0.15 * Math.sin((Date.now() - t) / 250);
+    ctx.save();
+    ctx.translate(goal.x + goal.w / 2, goal.y + goal.h / 2);
+    ctx.scale(pulse, pulse);
+    ctx.font = '40px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('😛', 0, 0);
+    ctx.restore();
+
+    // Player (IMAGE + flip)
+    ctx.save();
+
+    ctx.scale(player.facing, 1);
+    const px = player.facing === 1 ? player.x : -(player.x + player.w);
+
+    if (playerImg.complete && playerImg.naturalWidth !== 0) {
+      ctx.drawImage(
+        playerImg,
+        px,
+        player.y,
+        player.w,
+        player.h
+      );
+    } else {
+      ctx.font = '30px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🐱', px + player.w / 2, player.y + player.h / 2);
+    }
+
+    ctx.restore();
+    ctx.restore();
+
+    // UI text
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = '13px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      'Arrow keys / WASD to move',
+      W / 2,
+      H - 18
+    );
+  }
+
+  function loop() {
+    update();
+    draw();
+    gameLoop = requestAnimationFrame(loop);
+  }
+
+  loop();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ══════════════════════════════════════════════════════
+   LEVEL TYPE: DODGE
+   ═════════════════════════════════════════════════════ */
+function initDodge(W, H) {
+  const player = { x: W/2 - 20, y: H - 80, w: 40, h: 40, speed: 3 };
+  let obstacles = [];
+  let spawnTimer = 0;
+  let spawnInterval = 60;
+  let score = 0;
+  let survived = 0;
+  const GOAL_SCORE = 300;
+
+  function spawnObstacle() {
+    const shapes = ['💜','💙','💛','❤️','💚'];
+    obstacles.push({
+      x: Math.random() * (W - 40),
+      y: -40,
+      w: 36, h: 36,
+      speed: 1 + Math.random() * 3,
+      emoji: shapes[Math.floor(Math.random() * shapes.length)],
+    });
+  }
+
+  function update() {
+    if (keys['ArrowLeft']  || keys['a']) player.x -= player.speed;
+    if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+    if (keys['ArrowUp']    || keys['w']) player.y -= player.speed;
+    if (keys['ArrowDown']  || keys['s']) player.y += player.speed;
+
+    player.x = Math.max(0, Math.min(W - player.w, player.x));
+    player.y = Math.max(0, Math.min(H - player.h, player.y));
+
+    spawnTimer++;
+    if (spawnTimer >= spawnInterval) {
+      spawnObstacle();
+      spawnTimer = 0;
+      spawnInterval = Math.max(25, spawnInterval - 1.5);
+    }
+
+    for (const ob of obstacles) { ob.y += ob.speed; }
+    obstacles = obstacles.filter(ob => ob.y < H + 50);
+
+    score++;
+    survived = Math.floor(score / 60);
+
+    for (const ob of obstacles) {
+      if (player.x + player.w - 8 > ob.x + 4 && player.x + 8 < ob.x + ob.w - 4 &&
+          player.y + player.h - 8 > ob.y + 4 && player.y + 8 < ob.y + ob.h - 4) {
+        // Hit! Reset
+        obstacles = [];
+        score = 0;
+        spawnInterval = 60;
+        player.x = W/2 - 20; player.y = H - 80;
+        return;
+      }
+    }
+
+    if (score >= GOAL_SCORE) { completeLevel(); }
+  }
+
+  const t = Date.now();
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#0a001a');
+    bg.addColorStop(1, '#1a0040');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Progress bar
+    const pct = Math.min(score / GOAL_SCORE, 1);
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.beginPath(); ctx.roundRect(W/2 - 140, 60, 280, 8, 4); ctx.fill();
+    ctx.fillStyle = '#c77dff';
+    ctx.beginPath(); ctx.roundRect(W/2 - 140, 60, 280 * pct, 8, 4); ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '13px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Survive: ${survived}s / ${GOAL_SCORE/60}s`, W/2, 55);
+
+    // Obstacles
+    for (const ob of obstacles) {
+      ctx.font = '30px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ob.emoji, ob.x + ob.w/2, ob.y + ob.h/2);
+    }
+
+    // Player
+    if (playerImg.complete && playerImg.naturalWidth !== 0) {
+      ctx.drawImage(
+        playerImg,
+        player.x,
+        player.y,
+        player.w,
+        player.h
+      );
+    } else {
+      ctx.font = '36px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🐱', player.x + player.w/2, player.y + player.h/2);
+    }
+    
+    ctx.restore();
+    
+    ctx.restore();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = '13px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Arrow keys or WASD to dodge', W/2, H - 18);
+  }
+
+  function loop() {
+    update();
+    draw();
+    gameLoop = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function initWords(W, H) {
+  stopGame();
+
+  // Clear canvas
+  ctx.clearRect(0, 0, W, H);
+
+  // Create UI container
+  const wrap = document.createElement('div');
+  wrap.id = 'word-game-ui';
+  wrap.style.position = 'absolute';
+  wrap.style.top = '50%';
+  wrap.style.left = '50%';
+  wrap.style.transform = 'translate(-50%, -50%)';
+  wrap.style.background = 'white';
+  wrap.style.padding = '2rem';
+  wrap.style.borderRadius = '20px';
+  wrap.style.boxShadow = '0 10px 40px rgba(0,0,0,0.2)';
+  wrap.style.display = 'flex';
+  wrap.style.flexDirection = 'column';
+  wrap.style.gap = '1rem';
+  wrap.style.alignItems = 'center';
+
+  // CLUE TEXT
+  const clue = document.createElement('div');
+  clue.textContent = "Clue: 29-13, 18-5, 18-22, 22-26";
+  clue.style.fontWeight = '800';
+  clue.style.color = '#2a8fc4';
+
+  // Inputs
+  const inputs = [];
+  for (let i = 0; i < 4; i++) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `Word ${i+1}`;
+    input.style.padding = '0.6rem 1rem';
+    input.style.borderRadius = '10px';
+    input.style.border = '1px solid #ccc';
+    input.style.textAlign = 'center';
+    inputs.push(input);
+    wrap.appendChild(input);
+  }
+
+  // Correct answers (EDIT THESE)
+  const answers = ["tokyo", "los angeles", "london", "madrid"];
+
+  // Button
+  const btn = document.createElement('button');
+  btn.textContent = "Check";
+  btn.className = 'btn-primary';
+
+  const msg = document.createElement('div');
+  msg.style.fontWeight = '700';
+
+  btn.onclick = () => {
+    const correct = inputs.every((inp, i) =>
+      inp.value.trim().toLowerCase() === answers[i]
+    );
+
+    if (correct) {
+      document.getElementById('word-game-ui').remove();
+      completeLevel();
+    } else {
+      msg.textContent = "Not quite right — try again!";
+      msg.style.color = '#c0394e';
+    }
+  };
+
+  wrap.appendChild(clue);
+  wrap.appendChild(btn);
+  wrap.appendChild(msg);
+
+  document.getElementById('game-canvas-wrap').appendChild(wrap);
+}
+
+
+
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
